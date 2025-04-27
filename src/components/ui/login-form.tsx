@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,15 +11,55 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"form">) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Login gagal");
+      }
+
+      // Simpan token
+      localStorage.setItem("token", data.token);
+
+      // Redirect ke dashboard
+      router.push("/dashboard");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Terjadi kesalahan.");
+      }
+    }
+  };
+
   return (
-    <form className={cn("flex flex-col gap-7", className)} {...props}>
+    <form onSubmit={handleSubmit} className={cn("flex flex-col gap-7", className)} {...props}>
       <div className="flex flex-col items-start gap-2 text-left">
         <h1 className="text-4xl font-medium">Selamat Datang!</h1>
         <p className="text-lg text-muted-foreground">
           Selamat datang di HRIS CMLABS!
         </p>
       </div>
+
       <div className="grid gap-5">
+        
         {/* <div className="flex flex-row gap-2">
           <div className="grid gap-2 flex-1">
             <Label htmlFor="firstName">First Name</Label>
@@ -26,24 +70,31 @@ export function LoginForm({
             <Input id="lastName" type="text" placeholder="Schirano" required />
           </div>
         </div> */}
+
         <div className="grid gap-2">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
             placeholder="Masukkan email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
+
         <div className="grid gap-2">
           <Label htmlFor="password">Password</Label>
           <Input
             id="password"
             type="password"
             placeholder="Masukkan password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
+
         {/* <div className="grid gap-2">
           <Label htmlFor="password">Confirm Password</Label>
           <Input
@@ -53,18 +104,22 @@ export function LoginForm({
             required
           />
         </div> */}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <Button
+          type="submit"
           size="lg"
           className="gap-4 bg-[var(--color-primary-900)] text-white hover:bg-[var(--color-primary-800)]"
         >
           Login
         </Button>
+
         <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
           <span className="relative z-10 bg-background px-2 text-muted-foreground">
             Or continue with
           </span>
         </div>
+
         <Button variant="outline" className="w-full">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -93,6 +148,7 @@ export function LoginForm({
           Login with Google
         </Button>
       </div>
+
       <div className="text-center text-sm">
         Belum punya akun?{" "}
         <a href="#" className="underline underline-offset-4">
