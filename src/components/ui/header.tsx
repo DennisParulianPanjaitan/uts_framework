@@ -82,9 +82,9 @@ export const Header = () => {
         </div>
 
         <div className="flex justify-end w-full gap-3">
-        <Link href="/login">
-          <Button variant="outline">Masuk</Button>
-        </Link>
+          <Link href="/login">
+            <Button variant="outline">Masuk</Button>
+          </Link>
           <Button className=" bg-[var(--color-primary-900)] text-white hover:bg-[var(--color-primary-800)]">
             Daftar Sekarang
           </Button>
